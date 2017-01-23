@@ -22,7 +22,6 @@ class App < Sinatra::Base
     end
   end
   get "/" do
-    @name = "ドラえもん"
     slim :index
   end
   get "/entries/new" do

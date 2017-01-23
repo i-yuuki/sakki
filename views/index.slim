@@ -1,2 +1,6 @@
 h1 Sakki!!!!!!!!!!
 p Hello, #{@name || "World"}!
+ul
+  - entry_repository.each_with_index do |entry, id|
+    li
+      a(href="/entries/#{id}")= entry.title
