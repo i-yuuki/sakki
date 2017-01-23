@@ -6,20 +6,19 @@ class EntryRepository
   end
   
   def save(entry)
-    columns = ['title', 'body']
-    @db.prepare("INSERT INTO `entries` (#{columns.join(", ")}) VALUES (?, ?)").execute(entry.title, entry.body)
-    return @db.last_id
+    columns = Entry::COLUMNS.reject {|key| key == :id}
+    values = columns.map {|key| entry.instance_variable_get("@#{key}")}
+    @db.prepare("INSERT INTO `entries` (#{columns.join(", ")}) VALUES (#{columns.map { '?' }.join(', ')})").execute(*values)
+    entry.id = @db.last_id
+    return entry.id
   end
 
   def fetch(id)
     res = @db.prepare("SELECT * FROM `entries` WHERE `id` = ?").execute(id)
 
     data = res.first
-    entry = Entry.new
-    entry.title = data["title"]
-    entry.body = data["body"]
 
-    return entry
+    return Entry.new(data)
   end
   
   def each(&block)
@@ -28,10 +27,7 @@ class EntryRepository
     res = @db.query(query)
 
     res.each do |row|
-      entry = Entry.new
-      entry.title = row["title"]
-      entry.body = row["body"]
-      entries.push(entry)
+      entries.push(Entry.new(row))
     end
 
     entries.each(&block)
